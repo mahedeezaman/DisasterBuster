@@ -15,6 +15,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import androidx.lifecycle.lifecycleScope
+import com.example.disasterbuster.view_model.DisasterEventManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var loaderOverlay: FrameLayout
     private lateinit var locationManager: LocationManager
     private val viewModel: EventManager by viewModels()
+    private val disasterViewModel: DisasterEventManager by viewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,12 +39,35 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        viewModel.loadEvents()
 
+        val typeOfDisasters = mutableSetOf<String>()
+
+//        viewModel.loadEvents()
+//        lifecycleScope.launch {
+//            viewModel.events.collectLatest { events ->
+//                // update UI
+//                typeOfDisasters.clear()
+//
+//                events.forEach {
+//                    println(it)
+//                    typeOfDisasters.add(it.category)
+//                }
+//
+//                println("Unique disaster categories: $typeOfDisasters")
+//            }
+//        }
+
+        disasterViewModel.loadDisasters()
         lifecycleScope.launch {
-            viewModel.events.collectLatest { events ->
-                // update UI
-                events.forEach { println(it) }
+            disasterViewModel.disasters.collectLatest { disasters ->
+                typeOfDisasters.clear()
+
+                disasters.forEach {
+                    println(it)
+                    typeOfDisasters.add(it.reportUrl)
+                }
+
+                println("Unique disaster categories: ${typeOfDisasters.size}")
             }
         }
 
