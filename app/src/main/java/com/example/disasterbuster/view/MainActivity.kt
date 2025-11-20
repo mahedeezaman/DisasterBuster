@@ -6,7 +6,6 @@ import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.disasterbuster.R
-import com.example.disasterbuster.view_model.EventManager
 import com.example.disasterbuster.view_model.LocationManager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -24,7 +23,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var loaderOverlay: FrameLayout
     private lateinit var locationManager: LocationManager
-    private val viewModel: EventManager by viewModels()
     private val disasterViewModel: DisasterEventManager by viewModels()
 
 
@@ -41,21 +39,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
         val typeOfDisasters = mutableSetOf<String>()
-
-//        viewModel.loadEvents()
-//        lifecycleScope.launch {
-//            viewModel.events.collectLatest { events ->
-//                // update UI
-//                typeOfDisasters.clear()
-//
-//                events.forEach {
-//                    println(it)
-//                    typeOfDisasters.add(it.category)
-//                }
-//
-//                println("Unique disaster categories: $typeOfDisasters")
-//            }
-//        }
         disasterViewModel.init(this)
         disasterViewModel.fetchDisasters()
 
