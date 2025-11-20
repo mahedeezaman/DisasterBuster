@@ -1,4 +1,7 @@
 package com.example.disasterbuster.model
+
+import android.graphics.Bitmap
+
 data class DisasterItem(
     val id: Int,
     val name: String,
@@ -6,6 +9,6 @@ data class DisasterItem(
     val description: String,
     val coordinates: List<Double>,
     val reportUrl: String,
-    val icon: String,
+    var icon: Bitmap? = null,
     val alertscore: String
 )

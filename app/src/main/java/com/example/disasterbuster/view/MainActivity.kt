@@ -56,8 +56,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 //                println("Unique disaster categories: $typeOfDisasters")
 //            }
 //        }
-
+        disasterViewModel.init(this)
         disasterViewModel.fetchDisasters()
+
         lifecycleScope.launch {
             disasterViewModel.disasters.collectLatest { disasters ->
                 typeOfDisasters.clear()

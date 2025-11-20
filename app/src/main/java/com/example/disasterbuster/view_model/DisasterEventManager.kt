@@ -1,5 +1,6 @@
 package com.example.disasterbuster.view_model
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.disasterbuster.model.DisasterItem
@@ -12,7 +13,15 @@ import kotlinx.coroutines.launch
 
 class DisasterEventManager : ViewModel() {
 
-    private val model = DisasterModel(GdacsNetworkService())
+    private lateinit var model: DisasterModel
+
+    fun init(context: Context) {
+        model = DisasterModel(
+            context,
+            GdacsNetworkService(),
+            viewModelScope
+        )
+    }
 
     private val _disasters = MutableStateFlow<List<DisasterItem>>(emptyList())
     val disasters: StateFlow<List<DisasterItem>> get() = _disasters
@@ -28,3 +37,4 @@ class DisasterEventManager : ViewModel() {
         }
     }
 }
+
