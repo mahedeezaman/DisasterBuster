@@ -1,5 +1,6 @@
 package com.example.disasterbuster.view
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
@@ -15,6 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import androidx.lifecycle.lifecycleScope
 import com.example.disasterbuster.view_model.DisasterEventManager
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 
@@ -37,23 +39,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-
-        val typeOfDisasters = mutableSetOf<String>()
         disasterViewModel.init(this)
         disasterViewModel.fetchDisasters()
 
-        lifecycleScope.launch {
-            disasterViewModel.disasters.collectLatest { disasters ->
-                typeOfDisasters.clear()
-
-                disasters.forEach {
-                    println(it)
-                    typeOfDisasters.add(it.reportUrl)
-                }
-
-                println("Unique disaster categories: ${typeOfDisasters.size}")
-            }
-        }
 
         observeLocation()
     }
@@ -71,11 +59,27 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
         showLoader(true)
         locationManager.fetchLocation()
+
+        lifecycleScope.launch {
+            disasterViewModel.disasters.collectLatest { disasters ->
+                disasters.forEach { disaster ->
+                    val coords = disaster.coordinates
+                    if (coords.size >= 2) {
+                        val latLng = LatLng(coords[1], coords[0])
+                        val scaledIcon = Bitmap.createScaledBitmap(disaster.icon, 100, 100, true)
+                        val markerOptions = MarkerOptions()
+                            .position(latLng)
+                            .title(disaster.name + " (Alert Score: ${disaster.alertscore})")
+                            .icon(BitmapDescriptorFactory.fromBitmap(scaledIcon))
+                        mMap.addMarker(markerOptions)
+                    }
+                }
+            }
+        }
     }
 
     private fun moveMapToLocation(lat: Double, lng: Double) {
         val currentLatLng = LatLng(lat, lng)
-        mMap.clear()
         mMap.addMarker(MarkerOptions().position(currentLatLng).title("You are here"))
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 2f))
     }
