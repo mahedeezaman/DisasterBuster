@@ -19,7 +19,8 @@ data class Properties(
     val name: String,
     val description: String,
     val icon: String,
-    val url: URLClass
+    val url: URLClass,
+    val alertscore: String
 )
 
 data class URLClass(

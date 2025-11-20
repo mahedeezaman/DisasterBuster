@@ -15,7 +15,8 @@ class DisasterModel(private val networkService: GdacsNetworkService) {
                 description = feature.properties.description,
                 coordinates = feature.geometry.coordinates,
                 reportUrl = feature.properties.url.report,
-                icon = feature.properties.icon
+                icon = feature.properties.icon,
+                alertscore = feature.properties.alertscore
             )
         }
     }
