@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DisasterBuster</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="map_api_key">AIzaSyB4aPsncqoSoFxlXxO2q8IerYtCjHtEv6s</string>
 </resources>
