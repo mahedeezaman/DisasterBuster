@@ -2,10 +2,11 @@ package com.example.disasterbuster.model
 
 import com.example.disasterbuster.services.network_services.GdacsNetworkService
 
-class DisasterModel(private val networkService: Any) {
+class DisasterModel(private val networkService: GdacsNetworkService) {
 
+    // Fetch and map API data to DisasterItem
     suspend fun getFilteredDisasters(): List<DisasterItem> {
-        val response = GdacsNetworkService.fetchDisasters()
+        val response = networkService.fetchDisasters()
         return response.features.map { feature ->
             DisasterItem(
                 id = feature.properties.eventid,

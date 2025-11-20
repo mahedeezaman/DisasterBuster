@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 //            }
 //        }
 
-        disasterViewModel.loadDisasters()
+        disasterViewModel.fetchDisasters()
         lifecycleScope.launch {
             disasterViewModel.disasters.collectLatest { disasters ->
                 typeOfDisasters.clear()

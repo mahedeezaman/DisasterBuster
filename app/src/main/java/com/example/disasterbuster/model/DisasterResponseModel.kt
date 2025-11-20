@@ -5,16 +5,16 @@ data class DisasterResponse(
 )
 
 data class Feature(
-    val geometry: GeometryCoordinate,
+    val geometry: GeometryDisaster,
     val properties: Properties
 )
 
-data class GeometryCoordinate(
+data class GeometryDisaster(
     val coordinates: List<Double>
 )
 
 data class Properties(
-    val eventtype: String,
+    val eventtype: String, // DR, EQ, FL, TC, VO, WF
     val eventid: Int,
     val name: String,
     val description: String,

@@ -4,27 +4,35 @@ import com.example.disasterbuster.model.DisasterResponse
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Query
 
-object GdacsNetworkService {
+class GdacsNetworkService {
 
-    private const val BASE_URL = "https://www.gdacs.org/"
+    private val api: GdacsApi
+
+    init {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        api = retrofit.create(GdacsApi::class.java)
+    }
 
     // Retrofit API interface
     private interface GdacsApi {
         @GET("gdacsapi/api/events/geteventlist/events4app")
-        suspend fun getDisasters(): DisasterResponse
+        suspend fun getDisasters(
+            @Query("pagenumber") pageNumber: Int = 1,
+            @Query("pagesize") pageSize: Int = 100
+        ): DisasterResponse
     }
 
-    private val api: GdacsApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(GdacsApi::class.java)
+    suspend fun fetchDisasters(pageNumber: Int = 1, pageSize: Int = 100): DisasterResponse {
+        return api.getDisasters(pageNumber, pageSize)
     }
 
-    // Public suspend function to fetch disasters
-    suspend fun fetchDisasters(): DisasterResponse {
-        return api.getDisasters()
+    companion object {
+        private const val BASE_URL = "https://www.gdacs.org/"
     }
 }
