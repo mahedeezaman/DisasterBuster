@@ -1,21 +1,30 @@
-package com.example.disasterbuster
+package com.example.disasterbuster.view
 
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.example.disasterbuster.R
+import com.example.disasterbuster.view_model.EventManager
+import com.example.disasterbuster.view_model.LocationManager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var loaderOverlay: FrameLayout
     private lateinit var locationManager: LocationManager
+    private val viewModel: EventManager by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +36,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        viewModel.loadEvents()
+
+        lifecycleScope.launch {
+            viewModel.events.collectLatest { events ->
+                // update UI
+                events.forEach { println(it) }
+            }
+        }
 
         observeLocation()
     }
