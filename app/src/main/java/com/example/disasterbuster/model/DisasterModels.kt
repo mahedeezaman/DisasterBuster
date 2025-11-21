@@ -8,7 +8,15 @@ import com.example.disasterbuster.services.network_services.GdacsNetworkService
 import com.example.disasterbuster.services.storage_services.IconStorageService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+
 
 class DisasterModel(
     private val context: Context,
@@ -17,39 +25,42 @@ class DisasterModel(
 ) {
 
     private val iconService = IconStorageService(context)
+    private val _items = MutableSharedFlow<Pair<String, Bitmap>>(replay = 1)
+    val items: SharedFlow<Pair<String, Bitmap>> = _items
+
+    init {
+        scope.launch {
+            iconService.iconUpdates.collect { (type, bmp) ->
+                _items.emit(type to bmp)
+            }
+        }
+    }
 
     suspend fun getFilteredDisasters(): List<DisasterItem> {
         val response = networkService.fetchDisasters()
-        return response.features.map { feature ->
-            val type = feature.properties.eventtype
-
-            // default bitmap if not yet downloaded
-            val iconBitmap: Bitmap = if (iconService.iconExists(type)) {
-                iconService.loadIcon(type)
-            } else {
-                BitmapFactory.decodeResource(context.resources, R.drawable.unknown)
-            }
-
-            val disaster = DisasterItem(
-                id = feature.properties.eventid,
-                name = feature.properties.name,
-                type = type,
-                description = feature.properties.description,
-                coordinates = feature.geometry.coordinates,
-                reportUrl = feature.properties.url.report,
-                icon = iconBitmap,
-                alertscore = feature.properties.alertscore
-            )
-
-            // async download for later update
-            if (!iconService.iconExists(type)) {
-                scope.launch(Dispatchers.IO) {
-                    iconService.downloadAndSaveIcon(type, feature.properties.icon)
-                    disaster.icon = iconService.loadIcon(type)
-                }
-            }
-
-            disaster
+        val items = response.features.map { feature ->
+            createDisasterItem(feature)
         }
+        return items
+    }
+    fun createDisasterItem(feature: Feature): DisasterItem {
+        val typeKey = feature.properties.eventtype + feature.properties.alertscore
+        val placeholder = iconService.loadIcon(typeKey)
+
+        scope.launch(Dispatchers.IO) {
+            iconService.downloadAndSaveIcon(typeKey, feature.properties.icon)
+        }
+
+        return DisasterItem(
+            id = feature.properties.eventid,
+            name = feature.properties.name,
+            type = feature.properties.eventtype,
+            description = feature.properties.description,
+            coordinates = feature.geometry.coordinates,
+            reportUrl = feature.properties.url.report,
+            icon = placeholder,
+            iconUrl = feature.properties.icon,
+            alertscore = feature.properties.alertscore
+        )
     }
 }

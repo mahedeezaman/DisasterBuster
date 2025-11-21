@@ -9,6 +9,7 @@ data class DisasterItem(
     val description: String,
     val coordinates: List<Double>,
     val reportUrl: String,
+    val iconUrl: String,
     var icon: Bitmap,
     val alertscore: String
 )
