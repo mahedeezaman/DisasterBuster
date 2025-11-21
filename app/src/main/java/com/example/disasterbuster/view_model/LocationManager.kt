@@ -39,6 +39,10 @@ class LocationManager(private val context: Context) {
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
             fetchLocation()
+        } else {
+            // permission not granted, null emitted
+            _locationLiveData.postValue(null)
+            return
         }
     }
 
