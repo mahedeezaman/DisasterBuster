@@ -1,12 +1,13 @@
 package com.example.disasterbuster.view
 
-import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.example.disasterbuster.R
 import com.example.disasterbuster.view_model.LocationManager
 import com.example.disasterbuster.view_model.DisasterEventManager
@@ -20,11 +21,13 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.graphics.scale
+import android.Manifest
+
+
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -51,7 +54,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         lifecycleScope.launch {
             disasterViewModel.item.collect { (typeKey, bmp) ->
                 val scaled = withContext(Dispatchers.Default) {
-                    bmp.scale(75, 75).copy(Bitmap.Config.ARGB_8888, false)
+                    bmp.scale(75, 100).copy(Bitmap.Config.ARGB_8888, false)
                 }
                 markerMap[typeKey]?.forEach { marker ->
                     marker.setIcon(BitmapDescriptorFactory.fromBitmap(scaled))
@@ -71,10 +74,41 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Ask permission if not granted
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                1001
+            )
+        } else {
+            // Already granted, fetch location immediately
+            locationManager.fetchLocation()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1001) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationManager.fetchLocation()
+            } else {
+                // Permission denied, you can show a message or fallback
+            }
+        }
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         showLoader(true)
-        locationManager.fetchLocation()
+        checkLocationPermission()
 
         lifecycleScope.launch {
             disasterViewModel.disasters.collectLatest { disasters ->
