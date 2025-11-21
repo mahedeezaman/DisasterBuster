@@ -26,8 +26,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.graphics.scale
 import android.Manifest
-
-
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        fixSafeAreaIssues()
 
         loaderOverlay = findViewById(R.id.loader_overlay)
         locationManager = LocationManager(this)
@@ -51,6 +53,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         disasterViewModel.init(this)
         disasterViewModel.fetchDisasters()
 
+        iconUpdateListener()
+        observeLocation()
+    }
+
+    private fun fixSafeAreaIssues(){
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        val root = findViewById<View>(R.id.main_container)
+
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+    }
+    private fun iconUpdateListener() {
         lifecycleScope.launch {
             disasterViewModel.item.collect { (typeKey, bmp) ->
                 val scaled = withContext(Dispatchers.Default) {
@@ -61,8 +80,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
-
-        observeLocation()
     }
 
     private fun observeLocation() {
@@ -80,14 +97,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // Ask permission if not granted
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 1001
             )
         } else {
-            // Already granted, fetch location immediately
             locationManager.fetchLocation()
         }
     }
@@ -100,7 +115,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationManager.fetchLocation()
             } else {
-                // Permission denied, you can show a message or fallback
+                // Permission denied. So the current location wont be shown. thats it
             }
         }
     }
@@ -109,7 +124,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
         showLoader(true)
         checkLocationPermission()
+        getDisasterLocationInfo()
+    }
 
+    private fun getDisasterLocationInfo() {
         lifecycleScope.launch {
             disasterViewModel.disasters.collectLatest { disasters ->
                 disasters.forEach { disaster ->
@@ -117,7 +135,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     if (coords.size >= 2) {
                         val latLng = LatLng(coords[1], coords[0])
 
-                        val placeholderIcon = BitmapDescriptorFactory.fromBitmap(disaster.icon.scale(75, 75))
+                        val placeholderIcon =
+                            BitmapDescriptorFactory.fromBitmap(disaster.icon.scale(75, 75))
 
                         val markerOptions = MarkerOptions()
                             .position(latLng)

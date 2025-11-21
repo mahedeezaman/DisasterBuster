@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.disasterbuster.model.DisasterItem
 import com.example.disasterbuster.model.DisasterModel
-import com.example.disasterbuster.model.Feature
 import com.example.disasterbuster.services.network_services.GdacsNetworkService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

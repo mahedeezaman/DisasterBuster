@@ -19,7 +19,6 @@ class GdacsNetworkService {
         api = retrofit.create(GdacsApi::class.java)
     }
 
-    // Retrofit API interface
     private interface GdacsApi {
         @GET("gdacsapi/api/events/geteventlist/events4app")
         suspend fun getDisasters(

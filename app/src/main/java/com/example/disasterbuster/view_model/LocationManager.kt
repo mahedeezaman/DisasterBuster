@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Looper
+import android.view.View
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
@@ -13,6 +14,8 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.tasks.CancellationTokenSource
 
 class LocationManager(private val context: Context) {
@@ -26,7 +29,7 @@ class LocationManager(private val context: Context) {
                 context, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // permission not granted, emit null
+            // permission not granted, null emitted
             _locationLiveData.postValue(null)
             return
         }
@@ -43,6 +46,7 @@ class LocationManager(private val context: Context) {
             }
         }
     }
+
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun requestSingleLocationUpdate() {

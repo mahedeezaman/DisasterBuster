@@ -2,20 +2,13 @@ package com.example.disasterbuster.model
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import com.example.disasterbuster.R
 import com.example.disasterbuster.services.network_services.GdacsNetworkService
 import com.example.disasterbuster.services.storage_services.IconStorageService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 
 
 class DisasterModel(
