@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URL
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 class IconStorageService(private val context: Context) {
     private val iconDir = File(context.filesDir, "icons").apply { if (!exists()) mkdirs() }
@@ -19,26 +20,34 @@ class IconStorageService(private val context: Context) {
     val iconUpdates: SharedFlow<Pair<String, Bitmap>> = _iconUpdates
 
     private val inProgress = mutableMapOf<String, Boolean>()
-    private val scaledCache = mutableMapOf<String, Bitmap>()
 
     fun getIconFile(type: String) = File(iconDir, type)
 
     fun loadIcon(type: String): Bitmap =
-        if (getIconFile(type).exists()) BitmapFactory.decodeFile(getIconFile(type).path)
-        else fallbackBitmap()
+        if (getIconFile(type).exists()) {
+            BitmapFactory.decodeFile(getIconFile(type).path)
+        } else {
+            fallbackBitmap()
+        }
 
     fun fallbackBitmap() =
         BitmapFactory.decodeResource(context.resources, R.drawable.unknown)
-            ?: Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+            ?: createBitmap(100, 100)
 
     suspend fun downloadAndSaveIcon(type: String, url: String) {
-        if (inProgress[type] == true || getIconFile(type).exists()) return
+        if (inProgress[type] == true) {
+            return
+        }
         inProgress[type] = true
         try {
-            val bitmap = URL(url).openStream().use { BitmapFactory.decodeStream(it) }
-            getIconFile(type).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-            val scaled = Bitmap.createScaledBitmap(bitmap, 100, 100, true)
-            scaledCache[type] = scaled
+            val bitmap = URL(url).openStream().use {
+                BitmapFactory.decodeStream(it)
+            }
+            getIconFile(type).outputStream()
+                .use {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                }
+            val scaled = bitmap.scale(100, 100)
             _iconUpdates.emit(type to scaled)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -46,6 +55,4 @@ class IconStorageService(private val context: Context) {
             inProgress.remove(type)
         }
     }
-
-    fun getScaledIcon(type: String): Bitmap? = scaledCache[type]
 }

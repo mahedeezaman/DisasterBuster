@@ -1,5 +1,6 @@
 package com.example.disasterbuster.view
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
@@ -31,8 +32,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var loaderOverlay: FrameLayout
     private lateinit var locationManager: LocationManager
     private val disasterViewModel: DisasterEventManager by viewModels()
-
-    // Map of typeKey -> list of markers of that type
     private val markerMap = mutableMapOf<String, MutableList<Marker>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +48,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         disasterViewModel.init(this)
         disasterViewModel.fetchDisasters()
 
-        // Update markers dynamically when icon downloads complete
         lifecycleScope.launch {
             disasterViewModel.item.collect { (typeKey, bmp) ->
                 val scaled = withContext(Dispatchers.Default) {
@@ -78,7 +76,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         showLoader(true)
         locationManager.fetchLocation()
 
-        // Add all DisasterItem markers with placeholder icons
         lifecycleScope.launch {
             disasterViewModel.disasters.collectLatest { disasters ->
                 disasters.forEach { disaster ->
@@ -86,7 +83,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     if (coords.size >= 2) {
                         val latLng = LatLng(coords[1], coords[0])
 
-                        // Use placeholder first
                         val placeholderIcon = BitmapDescriptorFactory.fromBitmap(disaster.icon.scale(75, 75))
 
                         val markerOptions = MarkerOptions()
