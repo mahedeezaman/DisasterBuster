@@ -92,4 +92,12 @@ The app follows **MVVM architecture** and **SOLID principles** for maintainable,
 
 - Android phones only.  
 - Minimum SDK: 29 (Android 10).  
-- Google Play Services required for Maps.  
+- Google Play Services required for Maps.
+
+---
+
+## Screenshots
+
+<img width="1080" height="2400" alt="Screenshot_20251124_212921" src="https://github.com/user-attachments/assets/ba839698-6e01-45c1-9838-f6891811bd49" />
+<img width="1080" height="2400" alt="Screenshot_20251124_212850" src="https://github.com/user-attachments/assets/b65e9d40-e4e3-456f-8927-9042c73089f6" />
+<img width="1080" height="2400" alt="Screenshot_20251124_212832" src="https://github.com/user-attachments/assets/dbbce7c4-2448-498a-9e4e-b4c3ce3cd345" />
